@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": { "type": "string", "defaultValue": "ai-discoverability-scan" },
+    "location": { "type": "string", "defaultValue": "centralus" }
+  },
+  "variables": {
+    "hostingPlanName": "[format('{0}-plan', parameters('appName'))]",
+    "storageAccountName": "[toLower(replace(parameters('appName'), '-', ''))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "Standard_LRS" },
+      "kind": "StorageV2",
+      "properties": { "supportsHttpsTrafficOnly": true }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[format('{0}-ai', parameters('appName'))]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": { "Application_Type": "web" }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "P1v3", "tier": "PremiumV3", "size": "P1v3", "capacity": 1 },
+      "properties": { "reserved": true }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[parameters('appName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "[resourceId('Microsoft.Insights/components', format('{0}-ai', parameters('appName')))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "siteConfig": {
+          "linuxFxVersion": "DOCKER|",
+          "appSettings": [
+            { "name": "WEBSITES_PORT", "value": "8000" },
+            { "name": "BRAND_NAME", "value": "AI Discoverability Scanner" },
+            { "name": "MAX_PAGES", "value": "10" },
+            { "name": "MAX_DEPTH", "value": "2" },
+            { "name": "PAGE_TIMEOUT_SEC", "value": "25" }
+          ]
+        },
+        "httpsOnly": true
+      }
+    }
+  ],
+  "outputs": {
+    "webAppName": { "type": "string", "value": "[parameters('appName')]" }
+  }
+}
