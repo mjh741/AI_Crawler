@@ -11,7 +11,7 @@ This button creates:
 
 > After infra is up, connect the Web App to **GitHub Deployment Center** to build/run the included Dockerfile.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/REPLACE_WITH_RAW_URL_TO_INFRA/azuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://github.com/mjh741/AI_Crawler/tree/main/infra/azuredeploy.json)
 
 ## Quick Deploy Steps
 1. **Create a GitHub repo** and upload these files.
